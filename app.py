@@ -97,27 +97,26 @@ if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın 
                     st.link_button("Bilet al", f"https://www.aviasales.ru/search/GYDIST1")
                 st.markdown("---")
 
-        # 2. CINEMA -> CINEMAPLUS (Canlı Kino və Seans Linkləri)
-        elif page == "Cinema" or any(k in q for k in ["film", "cinema", "kino", "seans", "movie", "horror", "action", "komediya"]):
+        # 2. CINEMA -> CINEMAPLUS (Dinamik Film Axtarışı və Real Filmin Öz Linki)
+        elif page == "Cinema" or any(k in q for k in ["film", "cinema", "kino", "seans", "movie", "horror", "action", "komediya", "mommy"]):
             st.session_state.last_domain = "cinema"
+
+            encoded_movie = urllib.parse.quote(prompt)
+            movie_title = prompt.title()
+
             st.markdown(f"**CinemaPlus seansları ('{prompt}'):**")
 
-            movies = [
-                {"title": prompt.title() if len(prompt) > 3 else "Interstellar (IMAX)", "genre": "Sci-Fi / Drama", "rating": "8.7", "desc": f"CinemaPlus Gənclik Mall - {prompt.title()} seansı aktivdir."},
-                {"title": "Venom: The Last Dance", "genre": "Action / Sci-Fi", "rating": "7.5", "desc": "CinemaPlus 28 Mall - 19:45 seansı."}
-            ]
+            cols = st.columns([3, 1])
+            with cols[0]:
+                st.markdown(f"**{movie_title}** | Janr: Drama / Special Screening | Reytinq: 8.5")
+                st.markdown(f"CinemaPlus - '{movie_title}' film seansları və bilet satışı cari olaraq mövcuddur.")
+            with cols[1]:
+                # Artıq ümumi sayta deyil, məhz yazılan filmin axtarış/seans səhifəsinə yönlənir
+                st.link_button("Seansları seç", f"https://cinemaplus.az/az/search?q={encoded_movie}")
+            st.markdown("---")
 
-            for m in movies:
-                cols = st.columns([3, 1])
-                with cols[0]:
-                    st.markdown(f"**{m['title']}** | Janr: {m['genre']} | Reytinq: {m['rating']}")
-                    st.markdown(f"{m['desc']}")
-                with cols[1]:
-                    st.link_button("Seansları seç", "https://www.cinemaplus.az/")
-                st.markdown("---")
-
-        # 3. SHOPPING -> BIRMARKET (İstifadəçinin yazdığı istənilən məhsulu - socks, chay və ya başqa şeyi real şəkildə göstərir)
-        elif page == "Shopping" or True: # Həmişə shopping aktiv olacaq
+        # 3. SHOPPING -> BIRMARKET (İstifadəçinin yazdığı istənilən məhsulu göstərir)
+        elif page == "Shopping" or True:
             st.session_state.last_domain = "shopping"
 
             encoded_q = urllib.parse.quote(prompt)
@@ -125,7 +124,6 @@ if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın 
 
             st.markdown(f"**Birmarket üzrə tapılan məhsul ('{prompt}'):**")
 
-            # Dinamik olaraq məhsul adına uyğun şəkil seçirik
             img_url = "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400"
             if "socks" in q or "corab" in q:
                 img_url = "https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=400"
