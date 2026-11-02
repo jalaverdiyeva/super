@@ -57,7 +57,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # Çat Girişi və Ağıllı İdentifikasiya (Smart Routing)
-if prompt := st.chat_input("Nə axtarırsınız? (məs: roma, iphone, mommy filmi)..."):
+if prompt := st.chat_input("Nə axtarırsınız? (məs: istanbul, laptop, orbit zero)..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -67,39 +67,49 @@ if prompt := st.chat_input("Nə axtarırsınız? (məs: roma, iphone, mommy film
     with st.chat_message("assistant"):
         assistant_reply = ""
 
-        # 1. TRAVEL / FLIGHTS (Uçuş və şəhər adları)
-        if any(k in q for k in ["bilet", "flight", "uçuş", "reys", "roma", "paris", "nyc", "london", "istanbul", "dubai", "havai"]):
+        # 1. TRAVEL / FLIGHTS
+        if any(k in q for k in ["bilet", "flight", "uçuş", "reys", "istanbul", "dubai", "moscow", "tbilisi", "tashkent"]):
             flights = flight_repo.search(query=prompt)
             st.markdown(f"**Aviasales üzrə tapılan reyslər ('{prompt}'):**")
 
-            for f in flights:
-                cols = st.columns([3, 1])
-                with cols[0]:
-                    st.markdown(f"**{f['airline']}** ({f['flight_number']})\n{f['origin']['city']} -> {f['destination']['city']}\nTarix: {f['departure_local']}")
-                with cols[1]:
-                    st.markdown(f"**{f['price_azn']} ₼**")
-                    st.link_button("Bilet al", f["url"])
-                st.markdown("---")
+            if not flights:
+                st.warning("Uyğun reys tapılmadı.")
+            else:
+                for f in flights:
+                    with st.container(border=True):
+                        cols = st.columns([3, 1])
+                        with cols[0]:
+                            st.markdown(f"✈️ **{f['airline']}** ({f['flight_number']})")
+                            st.markdown(f"**{f['origin']['city']} ({f['origin']['code']}) ➔ {f['destination']['city']} ({f['destination']['code']})**")
+                            st.caption(f"Uçuş vaxtı: {f['departure_local']} | Baqaj: {f['baggage_kg']}kg")
+                        with cols[1]:
+                            st.markdown(f"### {f['price_azn']} AZN")
+                            st.link_button("Bilet al", f"https://www.aviasales.ru/search/GYD{f['destination']['code']}1")
 
-            assistant_reply = f"Aviasales üzrə '{prompt}' istiqamətində reyslər tapıldı."
+            assistant_reply = f"Aviasales üzrə '{prompt}' istiqamətində reyslər göstərildi."
 
-        # 2. CINEMA (Film və kino adları)
-        elif any(k in q for k in ["film", "cinema", "kino", "seans", "movie", "mommy", "horror", "action", "komediya", "venom", "smile"]):
+        # 2. CINEMA
+        elif any(k in q for k in ["film", "cinema", "kino", "seans", "movie", "orbit", "caravan", "laugh", "archive", "kites", "ledger", "spring", "signal", "sci-fi", "horror", "comedy", "action"]):
             movies = cinema_repo.search_movies(query=prompt)
             st.markdown(f"**CinemaPlus seansları ('{prompt}'):**")
 
-            for m in movies:
-                cols = st.columns([3, 1])
-                with cols[0]:
-                    st.markdown(f"**{m['title']}** | Reytinq: {m['rating']}")
-                    st.markdown(f"{m['synopsis']}")
-                with cols[1]:
-                    st.link_button("Seansları seç", m["url"])
-                st.markdown("---")
+            if not movies:
+                st.warning("Uyğun film tapılmadı.")
+            else:
+                for m in movies:
+                    with st.container(border=True):
+                        cols = st.columns([3, 1])
+                        with cols[0]:
+                            genres = ", ".join(m.get("genre", []))
+                            st.markdown(f"🎬 **{m['title']}** | ⭐ `{m['rating']}` | Janr: *{genres}*")
+                            st.write(f"{m['synopsis']}")
+                            st.caption(f"Müddət: {m.get('duration_min')} dəq | Dil: {m.get('language')}")
+                        with cols[1]:
+                            st.link_button("Seansları seç", f"https://cinemaplus.az/az/search?q={urllib.parse.quote(m['title'])}")
 
-            assistant_reply = f"CinemaPlus üzrə '{prompt}' seansları tapıldı."
+            assistant_reply = f"CinemaPlus üzrə '{prompt}' seansları göstərildi."
 
-        # 3. SHOPPING (Məhsul axtarışı)
+        # 3. SHOPPING
         else:
             products = product_repo.search(query=prompt)
             st.markdown(f"**Birmarket üzrə nəticələr ('{prompt}'):**")
@@ -112,19 +122,32 @@ if prompt := st.chat_input("Nə axtarırsınız? (məs: roma, iphone, mommy film
                     with cols[idx]:
                         name_dict = p.get("name", {})
                         name = name_dict.get("az") or name_dict.get("en") or str(name_dict)
+                        category = p.get("category", "").lower()
 
-                        img_src = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"
+                        icon = "🛍️"
+                        if "audio" in category: icon = "🎧"
+                        elif "computer" in category: icon = "💻"
+                        elif "phone" in category: icon = "📱"
+                        elif "wearable" in category: icon = "⌚"
+                        elif "sport" in category: icon = "👟"
+                        elif "accessor" in category: icon = "🎒"
+                        elif "home" in category: icon = "☕"
+                        elif "gift" in category: icon = "🎲"
+
                         real_shop_url = f"https://birmarket.az/search?q={urllib.parse.quote(name)}"
                         price = f"{p.get('price_azn', 0)} ₼"
                         desc = p.get("description", "")
+                        rating = p.get("rating", "4.0")
+                        stock = p.get("stock", 0)
 
-                        st.image(img_src, use_container_width=True)
-                        st.markdown(f"**{name}**")
-                        if desc:
-                            st.caption(desc)
-                        st.markdown(f"**Qiymət: {price}** | Stok: {p.get('stock', 0)}")
-                        st.link_button("View on Birmarket", real_shop_url)
+                        with st.container(border=True):
+                            st.markdown(f"### {icon} {name}")
+                            st.caption(f"Brend: **{p.get('brand', 'Birmarket')}** | Kateqoriya: {category.title()}")
+                            if desc:
+                                st.write(desc)
+                            st.markdown(f"**Qiymət:** `{price}` &nbsp;|&nbsp; ⭐ `{rating}` &nbsp;|&nbsp; Stok: `{stock}` ədəd")
+                            st.link_button("Birmarket-də bax", real_shop_url)
 
-            assistant_reply = f"Birmarket üzrə '{prompt}' məhsulları tapıldı."
+            assistant_reply = f"Birmarket üzrə '{prompt}' məhsulları göstərildi."
 
         st.session_state.messages.append({"role": "assistant", "content": assistant_reply})

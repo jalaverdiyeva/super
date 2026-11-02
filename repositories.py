@@ -1,5 +1,4 @@
 import json
-import urllib.parse
 
 class ProductRepository:
     def __init__(self, filepath="products.json"):
@@ -12,7 +11,6 @@ class ProductRepository:
         q_lower = query.lower()
         matched = []
         for p in self.products:
-            # Rəsmi dataset strukturuna görə adlar dictionary şəklindədir (az, en, ru)
             name_az = p.get("name", {}).get("az", "").lower()
             name_en = p.get("name", {}).get("en", "").lower()
             name_ru = p.get("name", {}).get("ru", "").lower()
