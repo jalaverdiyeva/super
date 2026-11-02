@@ -9,7 +9,7 @@ class ProductRepository:
 
         return [{
             "name": {"az": query.title(), "en": query.title()},
-            "price_azn": 19.99,
+            "price_azn": "19.99 ₼",
             "image_url": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400",
             "url": search_url,
             "description": f"Birmarket rəsmi axtarış nəticəsi: {query}"
@@ -34,7 +34,8 @@ class FlightRepository:
     def search(self, destination=None, query=None):
         target_city = destination or query or "Səyahət"
         encoded_city = urllib.parse.quote(target_city)
-        aviasales_url = f"https://www.aviasales.ru/search?destination={encoded_city}"
+        # Aviasales düzgün işlək axtarış formatı
+        aviasales_url = f"https://www.aviasales.ru/search?origin=GYD&destination_name={encoded_city}"
 
         return [{
             "airline": "Aviasales Live",

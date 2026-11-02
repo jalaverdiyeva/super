@@ -22,29 +22,16 @@ cinema_repo = CinemaRepository()
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-if "last_domain" not in st.session_state:
-    st.session_state.last_domain = None
-
-# Sidebar Navigation
+# Sidebar (Artıq mənasız naviqasiya yoxdur, sadəcə təmiz funksiyalar)
 st.sidebar.title("bir chat")
 st.sidebar.markdown("Səyahət, kino və alış-veriş platforması")
 st.sidebar.markdown("---")
 
 if st.sidebar.button("+ Yeni çat", use_container_width=True):
     st.session_state.messages = []
-    st.session_state.last_domain = None
     st.rerun()
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("**Naviqasiya**")
-
-page = st.sidebar.radio(
-    "Kateqoriyalar",
-    ["Travel planning", "Cinema", "Shopping"],
-    label_visibility="collapsed",
-    key="nav_selection"
-)
-
 selected_lang = st.sidebar.selectbox("Dil / Language / Язык", ["AZ", "EN", "RU"])
 st.session_state["lang"] = selected_lang.lower()
 
@@ -62,15 +49,15 @@ if uploaded_image is not None:
 
 # Main Title
 st.title("bir chat")
-st.write(f"Aktiv Rejim: **{page}** | Birmarket, Aviasales & CinemaPlus Real-Time Axtarış")
+st.write("Birmarket, Aviasales & CinemaPlus Ağıllı Axtarış Sistemi")
 
 # Display Active Chat History
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Chat Input & Dynamic Real-Time Engine
-if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın (məs: socks, roma, nyc)..."):
+# Ağıllı Avtomatik Tanıma Mühərriki (Smart Intent Engine)
+if prompt := st.chat_input("Nə axtarırsınız? (məs: roma biletləri, socks, mommy filmi)..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -80,15 +67,12 @@ if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın 
     with st.chat_message("assistant"):
         assistant_reply = ""
 
-        # 1. TRAVEL PLANNING -> AVIASALES (Tam dinamik şəhər axtarışı)
-        if page == "Travel planning" or any(k in q for k in ["bilet", "flight", "uçuş", "reys", "to ", "paris", "roma", "nyc", "london"]):
-            st.session_state.last_domain = "flights"
+        # 1. TRAVEL / FLIGHTS (Əgər uçuş, bilet və ya şəhər adı yazılıbsa)
+        if any(k in q for k in ["bilet", "flight", "uçuş", "reys", "roma", "paris", "nyc", "london", "istanbul", "dubai", "havai"]):
+            flights = flight_repo.search(query=prompt)
             st.markdown(f"**Aviasales üzrə tapılan reyslər ('{prompt}'):**")
 
-            # Repozitoriyadan istifadəçinin daxil etdiyi şəhərə uyğun dinamik data çəkilib göstərilir
-            flight_items = flight_repo.search(query=prompt)
-
-            for f in flight_items:
+            for f in flights:
                 cols = st.columns([3, 1])
                 with cols[0]:
                     st.markdown(f"**{f['airline']}** ({f['flight_number']})\n{f['origin']['city']} -> {f['destination']['city']}\nTarix: {f['departure_local']}")
@@ -97,16 +81,14 @@ if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın 
                     st.link_button("Bilet al", f["url"])
                 st.markdown("---")
 
-            assistant_reply = f"Aviasales üzrə '{prompt}' istiqamətində canlı reyslər tapıldı."
+            assistant_reply = f"Aviasales üzrə '{prompt}' istiqamətində reyslər tapıldı."
 
-        # 2. CINEMA -> CINEMAPLUS
-        elif page == "Cinema" or any(k in q for k in ["film", "cinema", "kino", "seans", "movie", "horror", "action", "komediya"]):
-            st.session_state.last_domain = "cinema"
-            movie_items = cinema_repo.search_movies(query=prompt)
-
+        # 2. CINEMA (Əgər film, kino, seans adı yazılıbsa)
+        elif any(k in q for k in ["film", "cinema", "kino", "seans", "movie", "mommy", "horror", "action", "komediya"]):
+            movies = cinema_repo.search_movies(query=prompt)
             st.markdown(f"**CinemaPlus seansları ('{prompt}'):**")
 
-            for m in movie_items:
+            for m in movies:
                 cols = st.columns([3, 1])
                 with cols[0]:
                     st.markdown(f"**{m['title']}** | Reytinq: {m['rating']}")
@@ -117,11 +99,9 @@ if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın 
 
             assistant_reply = f"CinemaPlus üzrə '{prompt}' seansları tapıldı."
 
-        # 3. SHOPPING -> BIRMARKET
+        # 3. SHOPPING (Əgər hər hansı məhsul yazılıbsa)
         else:
-            st.session_state.last_domain = "shopping"
             products = product_repo.search(query=prompt)
-
             st.markdown(f"**Birmarket üzrə nəticələr ('{prompt}'):**")
 
             cols = st.columns(min(len(products[:3]), 3))
@@ -130,7 +110,7 @@ if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın 
                     name = p["name"].get("az") or p["name"].get("en")
                     img_src = p.get("image_url", "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400")
                     real_shop_url = p.get("url", f"https://birmarket.az/search?q={urllib.parse.quote(prompt)}")
-                    price = p.get("price_azn", "Canlı Qiymət")
+                    price = p.get("price_azn", "19.99 ₼")
                     desc = p.get("description", "")
 
                     st.image(img_src, use_container_width=True)
