@@ -70,7 +70,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # Chat Input & Dynamic Real-Time Engine
-if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın (məs: socks, tea, iphone)..."):
+if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın (məs: socks, laptop, mommy)..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -78,10 +78,13 @@ if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın 
     q = prompt.lower()
 
     with st.chat_message("assistant"):
-        # 1. TRAVEL PLANNING -> AVIASALES (Canlı Uçuşlar və Real Bilet Linkləri)
+        assistant_reply = ""
+
+        # 1. TRAVEL PLANNING -> AVIASALES
         if page == "Travel planning" or any(k in q for k in ["bilet", "flight", "uçuş", "reys", "istanbul", "baku", "paris"]):
             st.session_state.last_domain = "flights"
-            st.markdown(f"**Aviasales üzrə tapılan reyslər ('{prompt}'):**")
+            assistant_reply = f"**Aviasales üzrə tapılan reyslər ('{prompt}'):**\n\n"
+            st.markdown(assistant_reply)
 
             flight_items = [
                 {"airline": "AZAL (Azerbaijan Airlines)", "code": "J2-075", "origin": "Baku (GYD)", "dest": "Istanbul (IST)", "price": 289.0, "time": "08:30"},
@@ -97,47 +100,60 @@ if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın 
                     st.link_button("Bilet al", f"https://www.aviasales.ru/search/GYDIST1")
                 st.markdown("---")
 
-        # 2. CINEMA -> CINEMAPLUS (Dinamik Film Axtarışı və Real Filmin Öz Linki)
+            assistant_reply += f"Tapılan reyslər göstərildi."
+
+        # 2. CINEMA -> CINEMAPLUS
         elif page == "Cinema" or any(k in q for k in ["film", "cinema", "kino", "seans", "movie", "horror", "action", "komediya", "mommy"]):
             st.session_state.last_domain = "cinema"
-
             encoded_movie = urllib.parse.quote(prompt)
             movie_title = prompt.title()
 
-            st.markdown(f"**CinemaPlus seansları ('{prompt}'):**")
+            assistant_reply = f"**CinemaPlus seansları ('{prompt}'):**"
+            st.markdown(assistant_reply)
 
             cols = st.columns([3, 1])
             with cols[0]:
                 st.markdown(f"**{movie_title}** | Janr: Drama / Special Screening | Reytinq: 8.5")
                 st.markdown(f"CinemaPlus - '{movie_title}' film seansları və bilet satışı cari olaraq mövcuddur.")
             with cols[1]:
-                # Artıq ümumi sayta deyil, məhz yazılan filmin axtarış/seans səhifəsinə yönlənir
                 st.link_button("Seansları seç", f"https://cinemaplus.az/az/search?q={encoded_movie}")
             st.markdown("---")
 
-        # 3. SHOPPING -> BIRMARKET (İstifadəçinin yazdığı istənilən məhsulu göstərir)
-        elif page == "Shopping" or True:
+        # 3. SHOPPING -> BIRMARKET (Repository + Smart Fallback)
+        else:
             st.session_state.last_domain = "shopping"
+            products = product_repo.search(query=prompt)
 
-            encoded_q = urllib.parse.quote(prompt)
-            item_name = prompt.title()
+            if not products:
+                encoded_q = urllib.parse.quote(prompt)
+                products = [{
+                    "name": {"az": prompt.title(), "en": prompt.title()},
+                    "price_azn": 19.99,
+                    "image_url": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400",
+                    "url": f"https://birmarket.az/search?q={encoded_q}",
+                    "description": f"Birmarket rəsmi təklifi: {prompt}"
+                }]
 
-            st.markdown(f"**Birmarket üzrə tapılan məhsul ('{prompt}'):**")
+            assistant_reply = f"**Birmarket üzrə nəticələr ('{prompt}'):**"
+            st.markdown(assistant_reply)
 
-            img_url = "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400"
-            if "socks" in q or "corab" in q:
-                img_url = "https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=400"
-            elif "chay" in q or "tea" in q or "çay" in q:
-                img_url = "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=400"
-            elif "iphone" in q:
-                img_url = "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400"
+            cols = st.columns(min(len(products[:3]), 3))
+            for idx, p in enumerate(products[:3]):
+                with cols[idx]:
+                    name = p["name"].get("az") or p["name"].get("en")
+                    img_src = p.get("image_url", "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400")
+                    real_shop_url = p.get("url", f"https://birmarket.az/search?q={urllib.parse.quote(prompt)}")
+                    price = p.get("price_azn", 19.99)
+                    desc = p.get("description", "")
 
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.image(img_url, use_container_width=True)
-                st.markdown("PRODUCT")
-                st.markdown(f"**{item_name}**")
-                st.markdown("~~49.99 ₼~~")
-                st.markdown("**19.99 ₼**")
-                st.link_button("View on Birmarket", f"https://birmarket.az/search?q={encoded_q}")
-                st.caption("Source: birmarket.az")
+                    st.image(img_src, use_container_width=True)
+                    st.markdown("PRODUCT")
+                    st.markdown(f"**{name}**")
+                    if desc:
+                        st.caption(desc)
+                    st.markdown(f"**{price} ₼**")
+                    st.link_button("View on Birmarket", real_shop_url)
+                    st.caption("Source: birmarket.az")
+
+        # Çat tarixçəsinə assistant-ın cavabını əlavə edirik
+        st.session_state.messages.append({"role": "assistant", "content": assistant_reply})
