@@ -90,7 +90,6 @@ if prompt := st.chat_input("Sualınızı daxil edin (AZ / RU / EN)..."):
                         st.markdown(f"**{f['airline']}** ({f['flight_number']})\n{f['origin']['city']} -> {f['destination']['city']}\nTarix: {f['departure_local']}")
                     with cols[1]:
                         st.markdown(f"**{f['price_azn']} AZN**")
-                        # Real Aviasales axtarış keçidi
                         aviasales_url = f"https://www.aviasales.ru/search/{f['origin']['code']}{f['departure_local'][:10].replace('-', '')}{f['destination']['code']}1"
                         st.link_button("Bilet al", aviasales_url)
                     st.markdown("---")
@@ -99,29 +98,31 @@ if prompt := st.chat_input("Sualınızı daxil edin (AZ / RU / EN)..."):
                 st.markdown(resp_text)
                 st.session_state.messages.append({"role": "assistant", "content": resp_text})
 
-        # 2. ALIŞ-VERİŞ / SHOPPING (Real Bakı Mağaza Linkləri)
+        # 2. ALIŞ-VERİŞ / SHOPPING (Dəqiq Axtarış Filtrli)
         elif any(k in q for k in product_keywords) or len(product_repo.search(query=q)) > 0:
             st.session_state.last_domain = "shopping"
             products = product_repo.search(query=q)
-            if not products:
-                products = product_repo.search()
 
-            st.markdown("**Tapılan məhsullar:**")
-            cols = st.columns(min(len(products[:3]), 3))
-            for idx, p in enumerate(products[:3]):
-                with cols[idx]:
-                    name = p["name"].get("az") or p["name"].get("en") or p["name"].get("ru")
-                    img_src = p.get("image_url", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300")
-                    real_shop_url = p.get("url", "https://irshad.az/")
+            if products:
+                st.markdown("**Tapılan məhsullar:**")
+                cols = st.columns(min(len(products[:3]), 3))
+                for idx, p in enumerate(products[:3]):
+                    with cols[idx]:
+                        name = p["name"].get("az") or p["name"].get("en") or p["name"].get("ru")
+                        img_src = p.get("image_url", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300")
+                        real_shop_url = p.get("url", "https://kontakt.az/")
 
-                    st.image(img_src, use_container_width=True)
-                    st.markdown(f"**{name}**")
-                    st.markdown(f"Brend: {p['brand']}")
-                    st.markdown(f"**{p['price_azn']} AZN**")
-                    # Real Mağazaya Keçid Düyməsi
-                    st.link_button("Mağazada bax", real_shop_url)
+                        st.image(img_src, use_container_width=True)
+                        st.markdown(f"**{name}**")
+                        st.markdown(f"Brend: {p['brand']}")
+                        st.markdown(f"**{p['price_azn']} AZN**")
+                        st.link_button("Mağazada bax", real_shop_url)
+            else:
+                resp_text = f"Axtardığınız '{prompt}' üzrə mağazalarda məhsul tapılmadı."
+                st.markdown(resp_text)
+                st.session_state.messages.append({"role": "assistant", "content": resp_text})
 
-        # 3. KİNO / CINEMA (CinemaPlus Linkləri)
+        # 3. KİNO / CINEMA
         elif any(k in q for k in cinema_keywords):
             st.session_state.last_domain = "cinema"
             movies = cinema_repo.search_movies()
@@ -141,7 +142,7 @@ if prompt := st.chat_input("Sualınızı daxil edin (AZ / RU / EN)..."):
                 "Sistem Uçuşlar (Aviasales), Alış-veriş və CinemaPlus üzrə sorğuları emal edir.\n\n"
                 "Nümunə sorğular:\n"
                 "- İstanbul istiqamətinə uçuşlar\n"
-                "- iPhone 15 qiyməti\n"
+                "- iPhone 17 qiyməti\n"
                 "- Kinoteatrda olan filmlər"
             )
             st.markdown(default_text)
