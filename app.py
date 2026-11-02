@@ -68,13 +68,18 @@ if prompt := st.chat_input("Sualınızı daxil edin (AZ / RU / EN)..."):
     elif any(c in q for c in ["paris", "париж"]):
         detected_city = "Paris"
 
-    # Açar sözlər
+    # Genişləndirilmiş açar sözlər (Janrlar daxil olmaqla)
     flight_keywords = ["bilet", "flight", "uçuş", "reys", "самолет", "билет", "рейс", "fly", "plane", "авиабилет"]
     product_keywords = ["iphone", "telefon", "shopping", "məhsul", "qulaqlıq", "headphones", "laptop", "телефон", "наушники", "ноутбук", "купить", "товар", "almaq", "birmarket", "price", "qiymət", "цена", "store", "shop"]
-    cinema_keywords = ["film", "cinema", "kino", "seans", "кино", "фильм", "билеты в кино", "movie", "showtime", "cinemaplus"]
+    cinema_keywords = [
+        "film", "cinema", "kino", "seans", "кино", "фильм", "билеты в кино", "movie", "showtime", "cinemaplus",
+        "horror", "action", "comedy", "drama", "thriller", "romance", "sci-fi", "animation",
+        "qorxu", "komediya", "dram", "triller", "fantastika", "animasiya", "döyüş"
+    ]
 
     with st.chat_message("assistant"):
         is_flight_intent = any(k in q for k in flight_keywords) or (detected_city is not None) or (st.session_state.last_domain == "flights" and not any(k in q for k in product_keywords + cinema_keywords))
+        is_cinema_intent = any(k in q for k in cinema_keywords) or (st.session_state.last_domain == "cinema" and not any(k in q for k in product_keywords + flight_keywords))
 
         # 1. UÇUŞLAR / FLIGHTS
         if is_flight_intent:
@@ -98,7 +103,7 @@ if prompt := st.chat_input("Sualınızı daxil edin (AZ / RU / EN)..."):
                 st.markdown(resp_text)
                 st.session_state.messages.append({"role": "assistant", "content": resp_text})
 
-        # 2. ALIŞ-VERİŞ / SHOPPING (Müəllimin ekranındakı kimi kart strukturu)
+        # 2. ALIŞ-VERİŞ / SHOPPING
         elif any(k in q for k in product_keywords) or len(product_repo.search(query=q)) > 0:
             st.session_state.last_domain = "shopping"
             products = product_repo.search(query=q)
@@ -113,13 +118,10 @@ if prompt := st.chat_input("Sualınızı daxil edin (AZ / RU / EN)..."):
                         real_shop_url = p.get("url", "https://kontakt.az/")
                         price = p.get("price_azn", 0)
 
-                        # Şəkildəki dizayn formatı
                         st.image(img_src, use_container_width=True)
                         st.markdown("PRODUCT")
                         st.markdown(f"**{name}**")
                         st.markdown(f"**{price} ₼**")
-
-                        # Yaşıl Birmarket düyməsi və mənbə
                         st.link_button("View on Birmarket", real_shop_url)
                         st.caption("Source: birmarket.az")
             else:
@@ -127,16 +129,26 @@ if prompt := st.chat_input("Sualınızı daxil edin (AZ / RU / EN)..."):
                 st.markdown(resp_text)
                 st.session_state.messages.append({"role": "assistant", "content": resp_text})
 
-        # 3. KİNO / CINEMA
-        elif any(k in q for k in cinema_keywords):
+        # 3. KİNO / CINEMA (Janrlar və Real-time Axtarış)
+        elif is_cinema_intent:
             st.session_state.last_domain = "cinema"
-            movies = cinema_repo.search_movies()
-            st.markdown("**Kinoteatr repertuarı:**")
+            matched_genre = None
+            for g in ["horror", "action", "comedy", "drama", "thriller", "qorxu", "komediya", "dram", "triller"]:
+                if g in q:
+                    matched_genre = g
+                    break
+
+            movies = cinema_repo.search_movies(genre=matched_genre, query=q if not matched_genre else None)
+            if not movies:
+                movies = cinema_repo.search_movies()
+
+            st.markdown("**Kinoteatr repertuarı (Real-time Seanslar):**")
             for m in movies[:3]:
                 cols = st.columns([3, 1])
                 with cols[0]:
-                    st.markdown(f"**{m['title']}** (Janr: {', '.join(m['genre'])}) | Reytinq: {m['rating']}")
-                    st.markdown(f"{m['synopsis'][:120]}...")
+                    genres_str = ", ".join(m.get('genre', []))
+                    st.markdown(f"**{m['title']}** | Janr: {genres_str} | Reytinq: {m['rating']}")
+                    st.markdown(f"Məlumat: {m.get('synopsis', '')[:120]}...")
                 with cols[1]:
                     st.link_button("Seansları seç", "https://www.cinemaplus.az/")
                 st.markdown("---")
@@ -148,7 +160,7 @@ if prompt := st.chat_input("Sualınızı daxil edin (AZ / RU / EN)..."):
                 "Nümunə sorğular:\n"
                 "- İstanbul istiqamətinə uçuşlar\n"
                 "- iPhone 17 qiyməti\n"
-                "- Kinoteatrda olan filmlər"
+                "- Qorxu filmləri / Kino seansları"
             )
             st.markdown(default_text)
             st.session_state.messages.append({"role": "assistant", "content": default_text})
