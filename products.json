@@ -10,7 +10,7 @@
     "category": "electronics",
     "price_azn": 2499.0,
     "description": "Smartfon Apple iPhone 17 256GB",
-    "image_url": "https://kontakt.az/media/catalog/product/cache/1/image/800x800/9df78eab33525d08d6e5fb8d27136e95/i/p/iphone-17-original.jpg",
+    "image_url": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600",
     "url": "https://kontakt.az/"
   },
   {
@@ -24,8 +24,8 @@
     "category": "electronics",
     "price_azn": 1899.0,
     "description": "Smartfon Apple iPhone 15 128GB",
-    "image_url": "https://irshad.az/storage/products/86953/iphone-15-black.jpg",
-    "url": "https://irshad.az/telefon-ve-plansetler/smartfonlar/apple-iphone-15-128gb-black"
+    "image_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600",
+    "url": "https://irshad.az/"
   },
   {
     "id": "prod_3",
@@ -38,8 +38,8 @@
     "category": "electronics",
     "price_azn": 499.0,
     "description": "Simsiz qulaqlıq Apple AirPods Pro 2",
-    "image_url": "https://bakuelectronics.az/media/catalog/product/cache/1/image/800x800/9df78eab33525d08d6e5fb8d27136e95/a/i/airpods_pro_2.jpg",
-    "url": "https://bakuelectronics.az/apple-airpods-pro-2nd-generation.html"
+    "image_url": "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600",
+    "url": "https://bakuelectronics.az/"
   },
   {
     "id": "prod_4",
@@ -52,7 +52,7 @@
     "category": "electronics",
     "price_azn": 3499.0,
     "description": "Noutbuk Apple MacBook Pro 14 M3",
-    "image_url": "https://kontakt.az/media/catalog/product/cache/1/image/800x800/9df78eab33525d08d6e5fb8d27136e95/m/a/macbook-pro-14-m3.jpg",
+    "image_url": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600",
     "url": "https://kontakt.az/"
   }
 ]
