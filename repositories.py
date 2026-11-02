@@ -1,7 +1,6 @@
 import json
 import os
 import requests
-import streamlit as st
 
 class FlightRepository:
     def __init__(self, filepath="flights.json", api_url=None):
@@ -15,9 +14,7 @@ class FlightRepository:
                 return json.load(f)
         return []
 
-    @st.cache_data(ttl=300)
     def search(self, destination=None, origin=None, date=None):
-        # Phase 2: Real API sorğusu (əgər URL mövcuddursa)
         if self.api_url:
             try:
                 params = {"origin": origin, "destination": destination, "date": date}
@@ -25,9 +22,8 @@ class FlightRepository:
                 if response.status_code == 200:
                     return response.json()
             except Exception:
-                pass  # Xəta baş verərsə lokal JSON-a keçir
+                pass
 
-        # Lokal JSON Fallback mantığı
         results = self.flights
         if origin:
             results = [f for f in results if f["origin"]["city"].lower() == origin.lower() or f["origin"]["code"].lower() == origin.lower()]
@@ -50,7 +46,6 @@ class ProductRepository:
                 return json.load(f)
         return []
 
-    @st.cache_data(ttl=300)
     def search(self, query=None, category=None):
         if self.api_url:
             try:
@@ -63,16 +58,20 @@ class ProductRepository:
 
         results = self.products
         if category:
-            results = [p for p in results if p["category"].lower() == category.lower()]
+            results = [p for p in results if p.get("category", "").lower() == category.lower()]
         if query:
             q = query.lower()
-            results = [
-                p for p in results
-                if q in p["name"].get("en", "").lower()
-                   or q in p["name"].get("az", "").lower()
-                   or q in p["name"].get("ru", "").lower()
-                   or q in p["description"].lower()
-            ]
+            filtered = []
+            for p in results:
+                name_az = p.get("name", {}).get("az", "").lower()
+                name_en = p.get("name", {}).get("en", "").lower()
+                name_ru = p.get("name", {}).get("ru", "").lower()
+                desc = p.get("description", "").lower()
+                brand = p.get("brand", "").lower()
+
+                if q in name_az or q in name_en or q in name_ru or q in desc or q in brand:
+                    filtered.append(p)
+            results = filtered
         return results
 
 
@@ -89,7 +88,6 @@ class CinemaRepository:
                 return json.load(f)
         return []
 
-    @st.cache_data(ttl=300)
     def search_movies(self, genre=None, query=None):
         if self.api_url:
             try:
@@ -101,13 +99,12 @@ class CinemaRepository:
 
         results = self.movies
         if genre:
-            results = [m for m in results if genre.lower() in [g.lower() for g in m["genre"]]]
+            results = [m for m in results if genre.lower() in [g.lower() for g in m.get("genre", [])]]
         if query:
             q = query.lower()
-            results = [m for m in results if q in m["title"].lower() or q in m["synopsis"].lower()]
+            results = [m for m in results if q in m.get("title", "").lower() or q in m.get("synopsis", "").lower()]
         return results
 
-    @st.cache_data(ttl=300)
     def get_showtimes_for_movie(self, movie_id, date=None):
         if self.api_url:
             try:
@@ -117,7 +114,7 @@ class CinemaRepository:
             except Exception:
                 pass
 
-        st_list = [s for s in self.showtimes if s["movie_id"] == movie_id]
+        st_list = [s for s in self.showtimes if s.get("movie_id") == movie_id]
         if date:
-            st_list = [s for s in st_list if s["date"] == date]
+            st_list = [s for s in st_list if s.get("date") == date]
         return st_list
