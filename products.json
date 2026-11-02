@@ -10,7 +10,7 @@
     "category": "electronics",
     "price_azn": 3379.0,
     "image_url": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400",
-    "url": "https://kontakt.az/"
+    "url": "https://birmarket.az/product/iphone-17-pro-256gb-black"
   },
   {
     "id": "prod_2",
@@ -23,7 +23,7 @@
     "category": "electronics",
     "price_azn": 3379.0,
     "image_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
-    "url": "https://kontakt.az/"
+    "url": "https://birmarket.az/product/iphone-17-pro-256gb-glacier"
   },
   {
     "id": "prod_3",
@@ -36,6 +36,6 @@
     "category": "electronics",
     "price_azn": 3380.0,
     "image_url": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400",
-    "url": "https://kontakt.az/"
+    "url": "https://birmarket.az/product/iphone-17-pro-256gb-japan"
   }
 ]
