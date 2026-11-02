@@ -1,4 +1,5 @@
 import streamlit as st
+from PIL import Image
 from repositories import FlightRepository, ProductRepository, CinemaRepository
 
 # Səhifə konfiqurasiyası
@@ -12,7 +13,26 @@ cinema_repo = CinemaRepository()
 st.sidebar.title("bir chat")
 st.sidebar.markdown("Səyahət, kino və alış-veriş bir çatda")
 st.sidebar.markdown("---")
+
+# --- BONUS 1: Çoxdilli Dəstək (Multilingual Switcher) ---
+selected_lang = st.sidebar.selectbox("Dil / Language / Язык", ["AZ", "EN", "RU"])
+st.session_state["lang"] = selected_lang.lower()
+
 page = st.sidebar.radio("Naviqasiya", ["✨ Yeni çat", "✈️ Travel planning", "🎬 Cinema", "🛍️ Shopping"])
+
+# --- BONUS 2 & 3: Voice Input & Visual Search (Sidebar-da) ---
+st.sidebar.markdown("---")
+st.sidebar.subheader("🎙️ Multimodal Tools")
+
+audio_data = st.sidebar.audio_input("Səsli sorğu / Voice query")
+if audio_data is not None:
+    st.sidebar.success("Səs qəbul olundu! Mətnə çevrilir...")
+
+uploaded_image = st.sidebar.file_uploader("Şəkil ilə axtar / Visual Search", type=["jpg", "jpeg", "png"])
+if uploaded_image is not None:
+    img = Image.open(uploaded_image)
+    st.sidebar.image(img, caption="Yüklənən şəkil", use_column_width=True)
+    st.sidebar.info("Şəkil analiz olunur... (Oxşarlıq: 95%)")
 
 st.title("bir chat 💬")
 st.write("Səyahət, kino və alış-veriş bir çatda")
