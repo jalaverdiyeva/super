@@ -6,12 +6,17 @@ from repositories import FlightRepository, ProductRepository, CinemaRepository
 # Səhifə konfiqurasiyası
 st.set_page_config(page_title="bir chat", layout="wide")
 
-# Müəllimin ekranındakı kimi şık yaşıl düymələr və kart dizaynı üçün CSS
+# Aktiv kateqoriyanı vurğulamaq və düymələri tənzimləmək üçün peşəkar CSS
 st.markdown("""
     <style>
     .stButton button { width: 100%; border-radius: 6px; background-color: #107c41; color: white; font-weight: 600; }
     .stButton button:hover { background-color: #0b5a30; color: white; }
     div.stMarkdown p { word-break: break-word; }
+    
+    /* Yan paneldə aktiv elementin daha səliqəli görünməsi üçün */
+    [data-testid="stSidebar"] div.row-widget.stRadio > div {
+        gap: 0.4rem;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -26,24 +31,31 @@ if "messages" not in st.session_state:
 if "last_domain" not in st.session_state:
     st.session_state.last_domain = None
 
-# Sidebar Navigation (Müəllimin ekranındakı ingilis/az mix menyu)
+# Yan panel (Sidebar)
 st.sidebar.title("bir chat")
 st.sidebar.markdown("Səyahət, kino və alış-veriş platforması")
 st.sidebar.markdown("---")
 
-selected_lang = st.sidebar.selectbox("Dil / Language / Язык", ["AZ", "EN", "RU"])
-st.session_state["lang"] = selected_lang.lower()
-
-page = st.sidebar.radio(
-    "Naviqasiya",
-    ["Yeni çat", "Travel planning", "Cinema", "Shopping"],
-    key="nav_selection"
-)
-
-if page == "Yeni çat" and len(st.session_state.messages) > 0:
+# "Yeni çat" düyməsi (Radio-dan çıxarıldı, təmiz düymə edildi)
+if st.sidebar.button("+ Yeni çat", use_container_width=True):
     st.session_state.messages = []
     st.session_state.last_domain = None
     st.rerun()
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("**Naviqasiya**")
+
+# Yalnız əsl domenlər naviqasiyada saxlanıldı
+page = st.sidebar.radio(
+    "Kateqoriyalar",
+    ["Travel planning", "Cinema", "Shopping"],
+    label_visibility="collapsed",
+    key="nav_selection"
+)
+
+# Dil seçimi
+selected_lang = st.sidebar.selectbox("Dil / Language / Язык", ["AZ", "EN", "RU"])
+st.session_state["lang"] = selected_lang.lower()
 
 # Multimodal Tools
 st.sidebar.markdown("---")
@@ -59,7 +71,7 @@ if uploaded_image is not None:
 
 # Main Title
 st.title("bir chat")
-st.write("Səyahət, kino və alış-veriş üzrə vahid axtarış sistemi")
+st.write(f"Aktiv Rejim: **{page}** | Səyahət, kino və alış-veriş üzrə vahid axtarış sistemi")
 
 # Display Active Chat History
 for message in st.session_state.messages:
@@ -89,7 +101,7 @@ if prompt := st.chat_input("Novruzda vizasız hara gedim? Bu axşam kinoda nə v
         is_cinema = (page == "Cinema") or any(k in q for k in cinema_keywords)
         is_shopping = (page == "Shopping") or any(k in q for k in product_keywords) or len(product_repo.search(query=q)) > 0
 
-        # 1. SHOPPING / BIRMARKET (Müəllimin ekranındakı dəqiq kart strukturu)
+        # 1. SHOPPING / BIRMARKET
         if is_shopping and page != "Travel planning" and page != "Cinema":
             st.session_state.last_domain = "shopping"
             products = product_repo.search(query=q)
@@ -121,7 +133,7 @@ if prompt := st.chat_input("Novruzda vizasız hara gedim? Bu axşam kinoda nə v
                     st.link_button("View on Birmarket", real_shop_url)
                     st.caption("Source: birmarket.az")
 
-            # Müəllimin ekranındakы filtr düymələri (Aşağıda)
+            # Filtr düymələri
             st.markdown("---")
             f_col1, f_col2, f_col3, f_col4, f_col5 = st.columns(5)
             with f_col1:
