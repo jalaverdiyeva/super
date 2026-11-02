@@ -70,7 +70,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # Chat Input & Dynamic Real-Time Engine
-if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın (məs: socks, laptop, mommy)..."):
+if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın (məs: socks, roma, nyc)..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -80,62 +80,49 @@ if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın 
     with st.chat_message("assistant"):
         assistant_reply = ""
 
-        # 1. TRAVEL PLANNING -> AVIASALES
-        if page == "Travel planning" or any(k in q for k in ["bilet", "flight", "uçuş", "reys", "istanbul", "baku", "paris"]):
+        # 1. TRAVEL PLANNING -> AVIASALES (Tam dinamik şəhər axtarışı)
+        if page == "Travel planning" or any(k in q for k in ["bilet", "flight", "uçuş", "reys", "to ", "paris", "roma", "nyc", "london"]):
             st.session_state.last_domain = "flights"
-            assistant_reply = f"**Aviasales üzrə tapılan reyslər ('{prompt}'):**\n\n"
-            st.markdown(assistant_reply)
+            st.markdown(f"**Aviasales üzrə tapılan reyslər ('{prompt}'):**")
 
-            flight_items = [
-                {"airline": "AZAL (Azerbaijan Airlines)", "code": "J2-075", "origin": "Baku (GYD)", "dest": "Istanbul (IST)", "price": 289.0, "time": "08:30"},
-                {"airline": "Turkish Airlines", "code": "TK-334", "origin": "Baku (GYD)", "dest": "Istanbul (IST)", "price": 340.0, "time": "14:15"}
-            ]
+            # Repozitoriyadan istifadəçinin daxil etdiyi şəhərə uyğun dinamik data çəkilib göstərilir
+            flight_items = flight_repo.search(query=prompt)
 
             for f in flight_items:
                 cols = st.columns([3, 1])
                 with cols[0]:
-                    st.markdown(f"**{f['airline']}** ({f['code']})\n{f['origin']} -> {f['dest']}\nUçuş vaxtı: {f['time']}")
+                    st.markdown(f"**{f['airline']}** ({f['flight_number']})\n{f['origin']['city']} -> {f['destination']['city']}\nTarix: {f['departure_local']}")
                 with cols[1]:
-                    st.markdown(f"**{f['price']} AZN**")
-                    st.link_button("Bilet al", f"https://www.aviasales.ru/search/GYDIST1")
+                    st.markdown(f"**{f['price_azn']}**")
+                    st.link_button("Bilet al", f["url"])
                 st.markdown("---")
 
-            assistant_reply += f"Tapılan reyslər göstərildi."
+            assistant_reply = f"Aviasales üzrə '{prompt}' istiqamətində canlı reyslər tapıldı."
 
         # 2. CINEMA -> CINEMAPLUS
-        elif page == "Cinema" or any(k in q for k in ["film", "cinema", "kino", "seans", "movie", "horror", "action", "komediya", "mommy"]):
+        elif page == "Cinema" or any(k in q for k in ["film", "cinema", "kino", "seans", "movie", "horror", "action", "komediya"]):
             st.session_state.last_domain = "cinema"
-            encoded_movie = urllib.parse.quote(prompt)
-            movie_title = prompt.title()
+            movie_items = cinema_repo.search_movies(query=prompt)
 
-            assistant_reply = f"**CinemaPlus seansları ('{prompt}'):**"
-            st.markdown(assistant_reply)
+            st.markdown(f"**CinemaPlus seansları ('{prompt}'):**")
 
-            cols = st.columns([3, 1])
-            with cols[0]:
-                st.markdown(f"**{movie_title}** | Janr: Drama / Special Screening | Reytinq: 8.5")
-                st.markdown(f"CinemaPlus - '{movie_title}' film seansları və bilet satışı cari olaraq mövcuddur.")
-            with cols[1]:
-                st.link_button("Seansları seç", f"https://cinemaplus.az/az/search?q={encoded_movie}")
-            st.markdown("---")
+            for m in movie_items:
+                cols = st.columns([3, 1])
+                with cols[0]:
+                    st.markdown(f"**{m['title']}** | Reytinq: {m['rating']}")
+                    st.markdown(f"{m['synopsis']}")
+                with cols[1]:
+                    st.link_button("Seansları seç", m["url"])
+                st.markdown("---")
 
-        # 3. SHOPPING -> BIRMARKET (Repository + Smart Fallback)
+            assistant_reply = f"CinemaPlus üzrə '{prompt}' seansları tapıldı."
+
+        # 3. SHOPPING -> BIRMARKET
         else:
             st.session_state.last_domain = "shopping"
             products = product_repo.search(query=prompt)
 
-            if not products:
-                encoded_q = urllib.parse.quote(prompt)
-                products = [{
-                    "name": {"az": prompt.title(), "en": prompt.title()},
-                    "price_azn": 19.99,
-                    "image_url": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400",
-                    "url": f"https://birmarket.az/search?q={encoded_q}",
-                    "description": f"Birmarket rəsmi təklifi: {prompt}"
-                }]
-
-            assistant_reply = f"**Birmarket üzrə nəticələr ('{prompt}'):**"
-            st.markdown(assistant_reply)
+            st.markdown(f"**Birmarket üzrə nəticələr ('{prompt}'):**")
 
             cols = st.columns(min(len(products[:3]), 3))
             for idx, p in enumerate(products[:3]):
@@ -143,7 +130,7 @@ if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın 
                     name = p["name"].get("az") or p["name"].get("en")
                     img_src = p.get("image_url", "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400")
                     real_shop_url = p.get("url", f"https://birmarket.az/search?q={urllib.parse.quote(prompt)}")
-                    price = p.get("price_azn", 19.99)
+                    price = p.get("price_azn", "Canlı Qiymət")
                     desc = p.get("description", "")
 
                     st.image(img_src, use_container_width=True)
@@ -151,9 +138,10 @@ if prompt := st.chat_input("İstədiyiniz məhsulu, filmi və ya uçuşu yazın 
                     st.markdown(f"**{name}**")
                     if desc:
                         st.caption(desc)
-                    st.markdown(f"**{price} ₼**")
+                    st.markdown(f"**{price}**")
                     st.link_button("View on Birmarket", real_shop_url)
                     st.caption("Source: birmarket.az")
 
-        # Çat tarixçəsinə assistant-ın cavabını əlavə edirik
+            assistant_reply = f"Birmarket üzrə '{prompt}' məhsulları tapıldı."
+
         st.session_state.messages.append({"role": "assistant", "content": assistant_reply})
