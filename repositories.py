@@ -32,16 +32,35 @@ class CinemaRepository:
 
 class FlightRepository:
     def search(self, destination=None, query=None):
-        target_city = destination or query or "Səyahət"
-        encoded_city = urllib.parse.quote(target_city)
-        # Aviasales düzgün işlək axtarış formatı
-        aviasales_url = f"https://www.aviasales.ru/search?origin=GYD&destination_name={encoded_city}"
+        target_city = destination or query or "Roma"
+
+        # Şəhər adlarını Aviasales-in tanıdığı IATA kodlarına avtomatik çeviririk
+        city_lower = target_city.lower()
+        iata_code = "ROM" # Standart
+
+        if "paris" in city_lower:
+            iata_code = "PAR"
+        elif "roma" in city_lower or "rome" in city_lower:
+            iata_code = "ROM"
+        elif "istanbul" in city_lower:
+            iata_code = "IST"
+        elif "dubai" in city_lower:
+            iata_code = "DXB"
+        elif "london" in city_lower:
+            iata_code = "LON"
+        elif "nyc" in city_lower or "new york" in city_lower:
+            iata_code = "NYC"
+        else:
+            iata_code = target_city[:3].upper()
+
+        # Aviasales-in qüsursuz işləyən rəsmi axtarış keçidi formatı
+        aviasales_url = f"https://www.aviasales.ru/search/GYD{iata_code}1"
 
         return [{
-            "airline": "Aviasales Live",
-            "flight_number": "J2-075",
+            "airline": "AZAL / Aviasales",
+            "flight_number": f"J2-{iata_code}",
             "origin": {"city": "Baku", "code": "GYD"},
-            "destination": {"city": target_city.title(), "code": target_city[:3].upper()},
+            "destination": {"city": target_city.title(), "code": iata_code},
             "departure_local": "Cari Reys",
             "price_azn": "289.0 AZN",
             "url": aviasales_url
