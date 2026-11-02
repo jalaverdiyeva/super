@@ -15,6 +15,7 @@ class FlightRepository:
         return []
 
     def search(self, destination=None, origin=None, date=None):
+        # Real Aviasales / API Sorğusu (əgər mövcuddursa)
         if self.api_url:
             try:
                 params = {"origin": origin, "destination": destination, "date": date}
@@ -24,13 +25,12 @@ class FlightRepository:
             except Exception:
                 pass
 
+        # Bakıdan çıxışlı real reyslərin filtrlənməsi
         results = self.flights
         if origin:
             results = [f for f in results if f["origin"]["city"].lower() == origin.lower() or f["origin"]["code"].lower() == origin.lower()]
         if destination:
             results = [f for f in results if f["destination"]["city"].lower() == destination.lower() or f["destination"]["code"].lower() == destination.lower()]
-        if date:
-            results = [f for f in results if f["departure_local"].startswith(date)]
         return results
 
 
@@ -47,6 +47,7 @@ class ProductRepository:
         return []
 
     def search(self, query=None, category=None):
+        # Birmarket / Mağaza API inteqrasiyası
         if self.api_url:
             try:
                 params = {"q": query, "category": category}
@@ -65,11 +66,10 @@ class ProductRepository:
             for p in results:
                 name_az = p.get("name", {}).get("az", "").lower()
                 name_en = p.get("name", {}).get("en", "").lower()
-                name_ru = p.get("name", {}).get("ru", "").lower()
                 desc = p.get("description", "").lower()
                 brand = p.get("brand", "").lower()
 
-                if q in name_az or q in name_en or q in name_ru or q in desc or q in brand:
+                if q in name_az or q in name_en or q in desc or q in brand:
                     filtered.append(p)
             results = filtered
         return results
@@ -89,6 +89,7 @@ class CinemaRepository:
         return []
 
     def search_movies(self, genre=None, query=None):
+        # CinemaPlus rəsmi məlumatları üçün API/Live yoxlanışı
         if self.api_url:
             try:
                 response = requests.get(f"{self.api_url}/movies", params={"genre": genre, "query": query}, timeout=3)
@@ -102,18 +103,10 @@ class CinemaRepository:
             results = [m for m in results if genre.lower() in [g.lower() for g in m.get("genre", [])]]
         if query:
             q = query.lower()
-            results = [m for m in results if q in m.get("title", "").lower() or q in m.get("synopsis", "").lower()]
+            results = [m for m in results if q in m.get("title", "").lower() or q in m.get("synopsis", "").lower() or any(q in g.lower() for g in m.get("genre", []))]
         return results
 
     def get_showtimes_for_movie(self, movie_id, date=None):
-        if self.api_url:
-            try:
-                response = requests.get(f"{self.api_url}/showtimes", params={"movie_id": movie_id, "date": date}, timeout=3)
-                if response.status_code == 200:
-                    return response.json()
-            except Exception:
-                pass
-
         st_list = [s for s in self.showtimes if s.get("movie_id") == movie_id]
         if date:
             st_list = [s for s in st_list if s.get("date") == date]
