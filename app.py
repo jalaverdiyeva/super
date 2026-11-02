@@ -93,13 +93,14 @@ if prompt := st.chat_input("Nə axtarırsınız? (məs: roma, iphone, mommy film
                 with cols[0]:
                     st.markdown(f"**{m['title']}** | Reytinq: {m['rating']}")
                     st.markdown(f"{m['synopsis']}")
+                    st.caption(f"Kinoteatr: {m['cinema']}")
                 with cols[1]:
                     st.link_button("Seansları seç", m["url"])
                 st.markdown("---")
 
             assistant_reply = f"CinemaPlus üzrə '{prompt}' seansları tapıldı."
 
-        # 3. SHOPPING (Məhsul axtarışı - yalnız yuxarıdakı şərtlər ödənmədikdə)
+        # 3. SHOPPING (Məhsul axtarışı)
         else:
             products = product_repo.search(query=prompt)
             st.markdown(f"**Birmarket üzrə nəticələr ('{prompt}'):**")
@@ -107,11 +108,11 @@ if prompt := st.chat_input("Nə axtarırsınız? (məs: roma, iphone, mommy film
             cols = st.columns(min(len(products[:3]), 3))
             for idx, p in enumerate(products[:3]):
                 with cols[idx]:
-                    name = p["name"].get("az") or p["name"].get("en")
-                    img_src = p.get("image_url", "https://images.unsplash.com/photo-1556742049-0a67d5e86540?w=400") # Daha səliqəli məhsul şəkli
+                    name = p.get("name", prompt.title())
+                    img_src = p.get("image", "https://images.unsplash.com/photo-1556742049-0a67d5e86540?w=500")
                     real_shop_url = p.get("url", f"https://birmarket.az/search?q={urllib.parse.quote(prompt)}")
-                    price = p.get("price_azn", "19.99 ₼")
-                    desc = p.get("description", "")
+                    price = p.get("price", "49.99 ₼")
+                    desc = p.get("desc", "")
 
                     st.image(img_src, use_container_width=True)
                     st.markdown("PRODUCT")
