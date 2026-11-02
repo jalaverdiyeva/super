@@ -1,74 +1,46 @@
-SuperChat - Unified Conversational Assistant 💬✈️🛒🎬
+# SuperChat 💬
 
-SuperChat is a single chat assistant that brings together three different services: Aviasales (flights), Birmarket (shopping), and CinemaPlus (movie tickets).
+Hey! This is my individual project submission for **SuperChat**, a unified conversational assistant combining Aviasales (flights), a Shopping Assistant (Birmarket e-commerce), and CinemaPlus (cinema) into a single chat window[cite: 3].
 
-Instead of opening three different apps or switching between different tabs, you can just ask everything in one chat window. The assistant figures out what you are asking for and gets the right data automatically.
+---
 
-💡 What This Project Does
+## 🚀 Project Overview
+Instead of forcing users to switch between multiple apps, SuperChat allows users to talk about flights, products, and movies in any order within one chat interface[cite: 3]. The system automatically routes incoming messages to the correct domain, preserves session context, and reads data strictly from the official Phase 1 JSON mock dataset[cite: 4, 5, 14].
 
-Single Chat Window: You don't need to select a mode or click switches. Just type what you need.
+---
 
-Smart Intent Routing: Automatically detects whether your message is about booking a flight, buying a product, or checking cinema showtimes.
+## 📂 Project Structure
+Here is how my code files are organized:
+- `app.py`: Main Streamlit web app handling the chat UI, message history state, and keyword routing.
+- `repositories.py`: Data access layer containing `FlightRepository`, `ProductRepository`, and `CinemaRepository` classes that parse the local JSON files[cite: 14].
+- `requirements.txt`: Contains project dependencies (`streamlit`)[cite: 11].
+- `flights.json`, `products.json`, `movies.json`, `cinemas.json`, `showtimes.json`: The official mock dataset files[cite: 16].
 
-Clean Repository Layer: All local JSON data access is cleanly isolated inside repositories.py (ProductRepository, CinemaRepository, FlightRepository). This makes it super easy to swap local mock data with real REST APIs in Phase 2.
+---
 
-Strict Dataset Adherence: Only uses official entries from the local mock JSON datasets without hallucinating fake items or prices.
+## 🛠️ How to Run Locally
 
-Multilingual UI & Multimodal Layout: Basic sidebar support for language context and voice/image search uploads.
-
-📁 Project Structure
-
-super/
-├── app.py              # Main Streamlit UI and chat routing logic
-├── repositories.py     # Clean data access layer loading JSON files
-├── requirements.txt    # Project dependencies
-├── flights.json        # Official mock flight dataset
-├── products.json       # Official mock shopping dataset
-├── movies.json         # Official mock movie list
-├── cinemas.json        # Official mock cinema venues
-└── showtimes.json      # Official mock movie showtimes
+1. **Clone or download** this repository.
+2. **Open your terminal** in the project directory and create a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 
 
-🚀 How to Run the App
 
-Prerequisites
+Install dependencies:
 
-Make sure you have Python 3.10+ installed on your computer.
-
-Quick Start (Single Command Setup)
-
-Clone the repository:
-
-git clone https://github.com/your-username/super.git
-cd super
-
-
-Install the required package:
-
+Bash
 pip install -r requirements.txt
+Run the Streamlit application using a single command:
 
-
-Launch the app:
-
+Bash
 streamlit run app.py
+Open the local URL (http://localhost:8501) in your web browser.
 
+💡 Example Test Queries
+Flights: "Find a flight to Istanbul" or "Flights to Dubai"
 
-The application will automatically open in your browser at http://localhost:8501.
+Shopping: "Wireless Headphones", "Laptop 15 Pro", or "Smartphone X5"
 
-🧪 Testing Sample Queries
-
-You can try typing any of these directly into the chat:
-
-Shopping: "Show me laptops" or "Do you have wireless headphones?"
-
-Flights: "Flights to Istanbul" or "Find me a flight to Moscow"
-
-Cinema: "What is playing tonight?" or "Show me Orbit Zero"
-
-🛠️ Built With
-
-Python 3.11
-
-Streamlit
-
-Python standard libraries (json, urllib.parse)
+Cinema: "Orbit Zero", "Smile 2", or "sci-fi movies"
