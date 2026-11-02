@@ -98,7 +98,7 @@ if prompt := st.chat_input("Sualınızı daxil edin (AZ / RU / EN)..."):
                 st.markdown(resp_text)
                 st.session_state.messages.append({"role": "assistant", "content": resp_text})
 
-        # 2. ALIŞ-VERİŞ / SHOPPING (Dəqiq Axtarış Filtrli)
+        # 2. ALIŞ-VERİŞ / SHOPPING (Müəllimin ekranındakı kimi kart strukturu)
         elif any(k in q for k in product_keywords) or len(product_repo.search(query=q)) > 0:
             st.session_state.last_domain = "shopping"
             products = product_repo.search(query=q)
@@ -109,14 +109,19 @@ if prompt := st.chat_input("Sualınızı daxil edin (AZ / RU / EN)..."):
                 for idx, p in enumerate(products[:3]):
                     with cols[idx]:
                         name = p["name"].get("az") or p["name"].get("en") or p["name"].get("ru")
-                        img_src = p.get("image_url", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300")
+                        img_src = p.get("image_url", "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400")
                         real_shop_url = p.get("url", "https://kontakt.az/")
+                        price = p.get("price_azn", 0)
 
+                        # Şəkildəki dizayn formatı
                         st.image(img_src, use_container_width=True)
+                        st.markdown("PRODUCT")
                         st.markdown(f"**{name}**")
-                        st.markdown(f"Brend: {p['brand']}")
-                        st.markdown(f"**{p['price_azn']} AZN**")
-                        st.link_button("Mağazada bax", real_shop_url)
+                        st.markdown(f"**{price} ₼**")
+
+                        # Yaşıl Birmarket düyməsi və mənbə
+                        st.link_button("View on Birmarket", real_shop_url)
+                        st.caption("Source: birmarket.az")
             else:
                 resp_text = f"Axtardığınız '{prompt}' üzrə mağazalarda məhsul tapılmadı."
                 st.markdown(resp_text)

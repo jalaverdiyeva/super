@@ -2,57 +2,40 @@
   {
     "id": "prod_1",
     "name": {
-      "az": "iPhone 17 256GB Black",
-      "en": "iPhone 17 256GB Black",
-      "ru": "iPhone 17 256GB Black"
+      "az": "Smartfon Apple iPhone 17 Pro 256GB Black MJRP4AF/A (Rəsmi zəmanət)",
+      "en": "Smartfon Apple iPhone 17 Pro 256GB Black",
+      "ru": "Smartfon Apple iPhone 17 Pro 256GB Black"
     },
     "brand": "Apple",
     "category": "electronics",
-    "price_azn": 2499.0,
-    "description": "Smartfon Apple iPhone 17 256GB",
-    "image_url": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600",
+    "price_azn": 3379.0,
+    "image_url": "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400",
     "url": "https://kontakt.az/"
   },
   {
     "id": "prod_2",
     "name": {
-      "az": "iPhone 15 128GB Black",
-      "en": "iPhone 15 128GB Black",
-      "ru": "iPhone 15 128GB Black"
+      "az": "Smartfon Apple iPhone 17 Pro 256GB Glacier MJRT4AF/A (Rəsmi zəmanət)",
+      "en": "Smartfon Apple iPhone 17 Pro 256GB Glacier",
+      "ru": "Smartfon Apple iPhone 17 Pro 256GB Glacier"
     },
     "brand": "Apple",
     "category": "electronics",
-    "price_azn": 1899.0,
-    "description": "Smartfon Apple iPhone 15 128GB",
-    "image_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600",
-    "url": "https://irshad.az/"
+    "price_azn": 3379.0,
+    "image_url": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
+    "url": "https://kontakt.az/"
   },
   {
     "id": "prod_3",
     "name": {
-      "az": "AirPods Pro (2-ci nəsil)",
-      "en": "AirPods Pro 2nd Gen",
-      "ru": "AirPods Pro (2-е поколение)"
+      "az": "Smartfon Apple iPhone 17 Pro 256GB Glacier MJR84J/A (JAPAN)",
+      "en": "Smartfon Apple iPhone 17 Pro 256GB Glacier (JAPAN)",
+      "ru": "Smartfon Apple iPhone 17 Pro 256GB Glacier (JAPAN)"
     },
     "brand": "Apple",
     "category": "electronics",
-    "price_azn": 499.0,
-    "description": "Simsiz qulaqlıq Apple AirPods Pro 2",
-    "image_url": "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600",
-    "url": "https://bakuelectronics.az/"
-  },
-  {
-    "id": "prod_4",
-    "name": {
-      "az": "MacBook Pro 14 M3",
-      "en": "MacBook Pro 14 M3",
-      "ru": "MacBook Pro 14 M3"
-    },
-    "brand": "Apple",
-    "category": "electronics",
-    "price_azn": 3499.0,
-    "description": "Noutbuk Apple MacBook Pro 14 M3",
-    "image_url": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600",
+    "price_azn": 3380.0,
+    "image_url": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400",
     "url": "https://kontakt.az/"
   }
 ]
